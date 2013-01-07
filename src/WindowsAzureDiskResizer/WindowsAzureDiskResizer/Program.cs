@@ -17,9 +17,10 @@ namespace WindowsAzureDiskResizer
             WriteHeader();
 
             // Check argument count
-            if (args.Length != 4)
+            if (args.Length < 2)
             {
                 WriteUsage();
+                Console.ReadLine();
                 return -1;
             }
 
@@ -36,8 +37,18 @@ namespace WindowsAzureDiskResizer
                 Console.WriteLine("Argument bloburl invalid. Please specify a valid URL with an http or https schema.");
                 return -1;
             }
-            var accountName = args[2];
-            var accountKey = args[3];
+            var accountName = "";
+            var accountKey = "";
+            if (args.Length == 4)
+            {
+                accountName = args[2];
+                accountKey = args[3];
+            } 
+            else if (!blobUri.Query.Contains("sig="))
+            {
+                Console.WriteLine("Please specify either a blob url with a shared access signature that allows write access or provide full storage credentials.");
+                return -1;
+            }
 
             // Start the resize process
             return ResizeVhdBlob(newSize, blobUri, accountName, accountKey);
@@ -46,7 +57,11 @@ namespace WindowsAzureDiskResizer
         private static int ResizeVhdBlob(long newSize, Uri blobUri, string accountName, string accountKey)
         {
             // Check if blob exists
-            var blob = new CloudPageBlob(blobUri, new StorageCredentials(accountName, accountKey));
+            var blob = new CloudPageBlob(blobUri);
+            if (!string.IsNullOrEmpty(accountName) && !string.IsNullOrEmpty(accountKey))
+            {
+                blob = new CloudPageBlob(blobUri, new StorageCredentials(accountName, accountKey));
+            }
             try
             {
                 if (!blob.Exists())
@@ -122,7 +137,6 @@ namespace WindowsAzureDiskResizer
 
             // Done!
             Console.WriteLine("[{0}] Done!", DateTime.Now.ToShortTimeString());
-            Console.ReadLine();
             return 0;
         }
 
