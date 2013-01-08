@@ -50,6 +50,27 @@ namespace WindowsAzureDiskResizer
                 return -1;
             }
 
+            // Verify size
+            var geometry = Geometry.FromCapacity(newSize);
+            if (geometry.Capacity != newSize)
+            {
+                Console.WriteLine("Argument size is invalid. {0} is the closest supported value. Use that instead? (y/n)", geometry.Capacity);
+                while (true)
+                {
+                    var consoleKey = Console.ReadKey().KeyChar;
+                    if (consoleKey == 'y')
+                    {
+                        newSize = geometry.Capacity;
+                        break;
+                    }
+                    if (consoleKey == 'n')
+                    {
+                        Console.WriteLine("Aborted.");
+                        return -1;
+                    }
+                }
+            }
+
             // Start the resize process
             return ResizeVhdBlob(newSize, blobUri, accountName, accountKey);
         }
