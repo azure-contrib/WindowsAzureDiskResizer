@@ -51,16 +51,18 @@ namespace WindowsAzureDiskResizer
             }
 
             // Verify size
-            var geometry = Geometry.FromCapacity(newSize);
-            if (geometry.Capacity != newSize)
+            decimal newSizeInMb = newSize / 1024;
+            if (Math.Round(newSizeInMb) != newSizeInMb)
             {
-                Console.WriteLine("Argument size is invalid. {0} is the closest supported value. Use that instead? (y/n)", geometry.Capacity);
+                decimal proposedNewSize = Math.Round(newSizeInMb);
+
+                Console.WriteLine("Argument size is invalid. {0} is the closest supported value. Use that instead? (y/n)", proposedNewSize);
                 while (true)
                 {
                     var consoleKey = Console.ReadKey().KeyChar;
                     if (consoleKey == 'y')
                     {
-                        newSize = geometry.Capacity;
+                        newSize = (long)proposedNewSize;
                         break;
                     }
                     if (consoleKey == 'n')
