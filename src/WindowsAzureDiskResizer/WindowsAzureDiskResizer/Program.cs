@@ -26,9 +26,9 @@ namespace WindowsAzureDiskResizer
 
             // Parse arguments
             long newSize = 0;
-            if (!long.TryParse(args[0], out newSize) || newSize % 512 != 0)
+            if (!long.TryParse(args[0], out newSize) || newSize % 512 != 0 || newSize >= 127 * 1024 * 1024 * 1024)
             {
-                Console.WriteLine("Argument size invalid. Please specify a valid disk size in bytes. Size must be a multitude of 512.");
+                Console.WriteLine("Argument size invalid. Please specify a valid disk size in bytes. Size must be a multitude of 512 and not exceed 127 GB.");
                 return -1;
             }
             Uri blobUri = null;
