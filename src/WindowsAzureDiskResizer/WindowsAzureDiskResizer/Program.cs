@@ -134,10 +134,6 @@ namespace WindowsAzureDiskResizer
             Console.WriteLine("[{0}] Expanding containing blob...", DateTime.Now.ToShortTimeString());
             blob.Resize(newSize + 512);
 
-            // Write 0 values where the footer used to be
-            Console.WriteLine("[{0}] Overwriting the current VHD file footer with zeroes...", DateTime.Now.ToShortTimeString());
-            blob.ClearPages(originalLength - 512, 512);
-
             // Change footer size values
             Console.WriteLine("[{0}] Updating VHD file format footer...", DateTime.Now.ToShortTimeString());
             footerInstance.CurrentSize = newSize;
@@ -157,6 +153,10 @@ namespace WindowsAzureDiskResizer
             {
                 blob.WritePages(stream, newSize);
             }
+
+            // Write 0 values where the footer used to be
+            Console.WriteLine("[{0}] Overwriting the old VHD file footer with zeroes...", DateTime.Now.ToShortTimeString());
+            blob.ClearPages(originalLength - 512, 512);
 
             // Done!
             Console.WriteLine("[{0}] Done!", DateTime.Now.ToShortTimeString());
