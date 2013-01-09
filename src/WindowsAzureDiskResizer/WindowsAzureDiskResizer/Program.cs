@@ -50,11 +50,11 @@ namespace WindowsAzureDiskResizer
                 return -1;
             }
 
-            // Verify size
-            decimal newSizeInMb = newSize / 1024;
-            if (Math.Round(newSizeInMb) != newSizeInMb)
+            // Verify size. Size should be a whole number when converted to MB -and- produce a valid geometry
+            decimal newSizeInGb = newSize / 1024 / 1024;
+            if (Math.Round(newSizeInGb) != newSizeInGb)
             {
-                decimal proposedNewSize = Math.Round(newSizeInMb);
+                decimal proposedNewSize = Math.Round(newSizeInGb) * 1024 * 1024;
 
                 Console.WriteLine("Argument size is invalid. {0} is the closest supported value. Use that instead? (y/n)", proposedNewSize);
                 while (true)
