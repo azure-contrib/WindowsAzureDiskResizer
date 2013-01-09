@@ -26,9 +26,9 @@ namespace WindowsAzureDiskResizer
 
             // Parse arguments
             long newSize = 0;
-            if (!long.TryParse(args[0], out newSize) || newSize % 512 != 0 || newSize >= 127 * 1024 * 1024 * 1024)
+            if (!long.TryParse(args[0], out newSize) || newSize % 512 != 0)
             {
-                Console.WriteLine("Argument size invalid. Please specify a valid disk size in bytes. Size must be a multitude of 512 and not exceed 127 GB.");
+                Console.WriteLine("Argument size invalid. Please specify a valid disk size in bytes. Size must be a multitude of 512.");
                 return -1;
             }
             Uri blobUri = null;
@@ -67,6 +67,26 @@ namespace WindowsAzureDiskResizer
                     }
                     if (consoleKey == 'n')
                     {
+                        Console.WriteLine("Aborted.");
+                        return -1;
+                    }
+                }
+            }
+
+            // Verify size. Size for OS disk must be < 127 GB
+            if (newSize / 1024 / 1024 / 1024 >= 127)
+            {
+                Console.WriteLine("Does this disk contain an operating system? (y/n)");
+                while (true)
+                {
+                    var consoleKey = Console.ReadKey().KeyChar;
+                    if (consoleKey == 'n')
+                    {
+                        break;
+                    }
+                    if (consoleKey == 'y')
+                    {
+                        Console.WriteLine("The given disk size exceeds 127 GB. Windows Azure will not be able to start the virtual machine stored on this disk if you continue.");
                         Console.WriteLine("Aborted.");
                         return -1;
                     }
