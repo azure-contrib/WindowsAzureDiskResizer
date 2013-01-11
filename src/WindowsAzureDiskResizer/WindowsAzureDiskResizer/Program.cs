@@ -25,10 +25,10 @@ namespace WindowsAzureDiskResizer
             }
 
             // Parse arguments
-            long newSize = 0;
-            if (!long.TryParse(args[0], out newSize) || newSize % 512 != 0)
+            long newSizeInGb = 0;
+            if (!long.TryParse(args[0], out newSizeInGb) || (newSizeInGb * 1024 * 1024 * 1024) % 512 != 0)
             {
-                Console.WriteLine("Argument size invalid. Please specify a valid disk size in bytes. Size must be a multitude of 512.");
+                Console.WriteLine("Argument size invalid. Please specify a valid disk size in GB (must be a whole number).");
                 return -1;
             }
             Uri blobUri = null;
@@ -50,31 +50,8 @@ namespace WindowsAzureDiskResizer
                 return -1;
             }
 
-            // Verify size. Size should be a whole number when converted to MB -and- produce a valid geometry
-            decimal newSizeInGb = (decimal)newSize / 1024 / 1024 / 1024;
-            if (Math.Round(newSizeInGb) != newSizeInGb)
-            {
-                decimal proposedNewSize = Math.Round(newSizeInGb) * 1024 * 1024 * 1024;
-
-                Console.WriteLine("Argument size is invalid. {0} is the closest supported value. Use that instead? (y/n)", proposedNewSize);
-                while (true)
-                {
-                    var consoleKey = Console.ReadKey().KeyChar;
-                    if (consoleKey == 'y')
-                    {
-                        newSize = (long)proposedNewSize;
-                        break;
-                    }
-                    if (consoleKey == 'n')
-                    {
-                        Console.WriteLine("Aborted.");
-                        return -1;
-                    }
-                }
-            }
-
             // Verify size. Size for OS disk must be < 127 GB
-            if (newSize / 1024 / 1024 / 1024 >= 127)
+            if (newSizeInGb >= 127)
             {
                 Console.WriteLine("Does this disk contain an operating system? (y/n)");
                 while (true)
@@ -94,7 +71,7 @@ namespace WindowsAzureDiskResizer
             }
 
             // Start the resize process
-            return ResizeVhdBlob(newSize, blobUri, accountName, accountKey);
+            return ResizeVhdBlob(newSizeInGb * 1024 * 1024 * 1024, blobUri, accountName, accountKey);
         }
 
         private static int ResizeVhdBlob(long newSize, Uri blobUri, string accountName, string accountKey)
@@ -194,6 +171,11 @@ namespace WindowsAzureDiskResizer
         {
             Console.WriteLine("Usage:");
             Console.WriteLine("   WindowsAzureDiskResizer.exe <size> <bloburl> <accountname> <accountkey>");
+            Console.WriteLine();
+            Console.WriteLine("     <size>         New disk size in GB");
+            Console.WriteLine("     <bloburl>      Disk blob URL");
+            Console.WriteLine("     <accountname>  Storage account (optional if bloburl contains SAS)");
+            Console.WriteLine("     <accountkey>   Storage key (optional if bloburl contains SAS)");
             Console.WriteLine();
         }
 
