@@ -20,7 +20,6 @@ namespace WindowsAzureDiskResizer
             if (args.Length < 2)
             {
                 WriteUsage();
-                Console.ReadLine();
                 return -1;
             }
 
@@ -178,56 +177,5 @@ namespace WindowsAzureDiskResizer
             Console.WriteLine("     <accountkey>   Storage key (optional if bloburl contains SAS)");
             Console.WriteLine();
         }
-
-        // Here's what I've tested it with on my local machine. Leaving it in for reference.
-        // {
-        //    string file = @"c:\users\maarten\desktop\orig.vhd";
-
-        //    long newSize = 20971520;
-
-        //    using (Stream stream = new FileStream(file, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-        //    {
-        //        stream.Seek(-512, SeekOrigin.End);
-        //        var currentFooterPosition = stream.Position;
-
-        //        // Read current footer
-        //        var footer = new byte[512];
-        //        stream.Read(footer, 0, 512);
-
-        //        var footerInstance = Footer.FromBytes(footer, 0);
-    
-
-        //        // Make sure this is a "fixed" disk
-        //        if (footerInstance.DiskType != FileType.Fixed)
-        //        {
-        //            throw new Exception("You nutcase!");
-        //        }
-
-        //        if (footerInstance.CurrentSize >= newSize)
-        //        {
-        //            throw new Exception("You nutcase!");
-        //        }
-
-        //        // Write 0 values
-        //        stream.Seek(currentFooterPosition, SeekOrigin.Begin);
-        //        while (stream.Length < newSize)
-        //        {
-        //            stream.WriteByte(0);
-        //        }
-
-        //        // Change footer size values
-        //        footerInstance.CurrentSize = newSize;
-        //        footerInstance.OriginalSize = newSize;
-        //        footerInstance.Geometry = Geometry.FromCapacity(newSize);
-
-        //        footerInstance.UpdateChecksum();
-
-        //        footer = new byte[512];
-        //        footerInstance.ToBytes(footer, 0);
-
-        //        // Write new footer
-        //        stream.Write(footer, 0, footer.Length);
-        //    }
-        //}
     }
 }
