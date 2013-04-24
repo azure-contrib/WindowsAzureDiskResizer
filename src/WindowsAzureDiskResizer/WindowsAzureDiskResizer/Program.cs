@@ -14,7 +14,7 @@ namespace WindowsAzureDiskResizer
     {
         private static int Main(string[] args)
         {
-            WriteHeader();
+            WriteHeader();            
 
             // Check argument count
             if (args.Length < 2)
@@ -75,6 +75,8 @@ namespace WindowsAzureDiskResizer
 
         private static int ResizeVhdBlob(long newSize, Uri blobUri, string accountName, string accountKey)
         {
+            bool isShrinking = false; 
+
             // Check if blob exists
             var blob = new CloudPageBlob(blobUri);
             if (!string.IsNullOrEmpty(accountName) && !string.IsNullOrEmpty(accountKey))
@@ -121,13 +123,27 @@ namespace WindowsAzureDiskResizer
             }
             if (footerInstance.CurrentSize >= newSize)
             {
-                Console.WriteLine("The specified VHD blob is larger than the specified new size. WindowsAzureDiskResizer can only expand VHD files.");
-                return -1;
+                Console.WriteLine("\n*******************************************************************");
+                Console.WriteLine("The specified VHD blob is larger than the specified new size.\n");
+                Console.WriteLine("*******************************************************************");
+                Console.WriteLine("Note that shrinking a disk is a potentially dangerous operation.");
+                Console.WriteLine("If this is required, the following may work, USE AT YOUR OWN RISK.\n"); 
+                Console.WriteLine("Make sure that you used diskpart / disk management BEFORE");
+                Console.WriteLine("to resize the partition to a size smaller than the target new size.");
+                Console.WriteLine("*******************************************************************");
+                Console.Write(@"Enter ""Please Proceed"" to confirm the operation: ");
+                if (Console.ReadLine() != "Please Proceed")
+                {
+                    Console.WriteLine("Process aborted"); 
+                    return -1;
+                }
+                isShrinking = true; 
+                Console.WriteLine();
             }
             Console.WriteLine("[{0}] VHD file format fixed, current size {1} bytes.", DateTime.Now.ToShortTimeString(), footerInstance.CurrentSize);
 
             // Expand the blob
-            Console.WriteLine("[{0}] Expanding containing blob...", DateTime.Now.ToShortTimeString());
+            Console.WriteLine("[{0}] {1} containing blob...", DateTime.Now.ToShortTimeString(), isShrinking ? "Shrinking"  : "Expanding"  );
             blob.Resize(newSize + 512);
 
             // Change footer size values
@@ -150,9 +166,13 @@ namespace WindowsAzureDiskResizer
                 blob.WritePages(stream, newSize);
             }
 
-            // Write 0 values where the footer used to be
-            Console.WriteLine("[{0}] Overwriting the old VHD file footer with zeroes...", DateTime.Now.ToShortTimeString());
-            blob.ClearPages(originalLength - 512, 512);
+            if ( isShrinking ){
+                Console.WriteLine("[{0}] Bypassing overwritting the old VHD file footer with zeroes since we are shrinking...",DateTime.Now.ToShortTimeString()); 
+            }else {
+                // Write 0 values where the footer used to be
+                Console.WriteLine("[{0}] Overwriting the old VHD file footer with zeroes...", DateTime.Now.ToShortTimeString());
+                blob.ClearPages(originalLength - 512, 512);
+            }
 
             // Done!
             Console.WriteLine("[{0}] Done!", DateTime.Now.ToShortTimeString());
