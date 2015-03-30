@@ -49,24 +49,12 @@ namespace WindowsAzureDiskResizer
                 return -1;
             }
 
-            // Verify size. Size for OS disk must be < 127 GB
-            if (newSizeInGb >= 127)
+            // Verify size. Size for disk must be <= 1023 GB
+            if (newSizeInGb > 1023)
             {
-                Console.WriteLine("Does this disk contain an operating system? (y/n)");
-                while (true)
-                {
-                    var consoleKey = Console.ReadKey().KeyChar;
-                    if (consoleKey == 'n')
-                    {
-                        break;
-                    }
-                    if (consoleKey == 'y')
-                    {
-                        Console.WriteLine("The given disk size exceeds 127 GB. Windows Azure will not be able to start the virtual machine stored on this disk if you continue.");
-                        Console.WriteLine("Aborted.");
-                        return -1;
-                    }
-                }
+                Console.WriteLine("The given disk size exceeds 1023 GB. Windows Azure will not be able to start the virtual machine stored on this disk if you continue.");
+                Console.WriteLine("See https://msdn.microsoft.com/en-us/library/azure/dn197896.aspx for more information.");
+                return -1;
             }
 
             // Start the resize process
