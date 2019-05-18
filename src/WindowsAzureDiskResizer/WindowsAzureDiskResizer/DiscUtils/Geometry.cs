@@ -30,10 +30,10 @@ namespace WindowsAzureDiskResizer.DiscUtils
     /// <remarks>Instances of this class are immutable.</remarks>
     public sealed class Geometry
     {
-        private int _cylinders;
-        private int _headsPerCylinder;
-        private int _sectorsPerTrack;
-        private int _bytesPerSector;
+        private readonly int _cylinders;
+        private readonly int _headsPerCylinder;
+        private readonly int _sectorsPerTrack;
+        private readonly int _bytesPerSector;
 
         /// <summary>
         /// Initializes a new instance of the Geometry class.  The default 512 bytes per sector is assumed.
@@ -132,7 +132,7 @@ namespace WindowsAzureDiskResizer.DiscUtils
         /// </summary>
         public long Capacity
         {
-            get { return ((long)TotalSectors) * ((long)BytesPerSector); }
+            get { return TotalSectors * ((long)BytesPerSector); }
         }
 
         /// <summary>
@@ -430,7 +430,7 @@ namespace WindowsAzureDiskResizer.DiscUtils
         /// Determines if this object is equivalent to another.
         /// </summary>
         /// <param name="obj">The object to test against.</param>
-        /// <returns><c>true</c> if the <paramref name="obj"/> is equalivalent, else <c>false</c>.</returns>
+        /// <returns><c>true</c> if the <paramref name="obj"/> is equivalent, else <c>false</c>.</returns>
         public override bool Equals(object obj)
         {
             if (obj == null || obj.GetType() != GetType())

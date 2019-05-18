@@ -32,9 +32,9 @@ namespace WindowsAzureDiskResizer.DiscUtils
         /// </summary>
         public static readonly ChsAddress First = new ChsAddress(0, 0, 1);
 
-        private int _cylinder;
-        private int _head;
-        private int _sector;
+        private readonly int _cylinder;
+        private readonly int _head;
+        private readonly int _sector;
 
         /// <summary>
         /// Initializes a new instance of the ChsAddress class.
@@ -77,7 +77,7 @@ namespace WindowsAzureDiskResizer.DiscUtils
         /// Determines if this object is equivalent to another.
         /// </summary>
         /// <param name="obj">The object to test against.</param>
-        /// <returns><c>true</c> if the <paramref name="obj"/> is equalivalent, else <c>false</c>.</returns>
+        /// <returns><c>true</c> if the <paramref name="obj"/> is equivalent, else <c>false</c>.</returns>
         public override bool Equals(object obj)
         {
             if (obj == null || obj.GetType() != GetType())

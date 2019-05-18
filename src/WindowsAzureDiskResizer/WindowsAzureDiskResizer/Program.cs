@@ -1,8 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -10,7 +7,7 @@ using WindowsAzureDiskResizer.DiscUtils;
 
 namespace WindowsAzureDiskResizer
 {
-    class Program
+    internal class Program
     {
         private static int Main(string[] args)
         {
@@ -24,16 +21,14 @@ namespace WindowsAzureDiskResizer
             }
 
             // Parse arguments
-            long newSizeInGb = 0;
-            if (!long.TryParse(args[0], out newSizeInGb) || (newSizeInGb * 1024 * 1024 * 1024) % 512 != 0)
+            if (!long.TryParse(args[0], out long newSizeInGb) || (newSizeInGb * 1024 * 1024 * 1024) % 512 != 0)
             {
                 Console.WriteLine("Argument size invalid. Please specify a valid disk size in GB (must be a whole number).");
                 return -1;
             }
-            Uri blobUri = null;
-            if (!Uri.TryCreate(args[1], UriKind.Absolute, out blobUri))
+            if (!Uri.TryCreate(args[1], UriKind.Absolute, out Uri blobUri))
             {
-                Console.WriteLine("Argument bloburl invalid. Please specify a valid URL with an http or https schema.");
+                Console.WriteLine("Argument bloburl invalid. Please specify a valid URL with an HTTP or HTTP schema.");
                 return -1;
             }
             var accountName = "";
@@ -42,10 +37,10 @@ namespace WindowsAzureDiskResizer
             {
                 accountName = args[2];
                 accountKey = args[3];
-            } 
+            }
             else if (!blobUri.Query.Contains("sig="))
             {
-                Console.WriteLine("Please specify either a blob url with a shared access signature that allows write access or provide full storage credentials.");
+                Console.WriteLine("Please specify either a blob URL with a shared access signature that allows write access or provide full storage credentials.");
                 return -1;
             }
 
@@ -81,7 +76,7 @@ namespace WindowsAzureDiskResizer
             }
             catch (StorageException ex)
             {
-                Console.WriteLine("The specified storage account credentials are invalid.");
+                Console.WriteLine("The specified storage account credentials are invalid. " + ex.ToString());
                 return -1;
             }
 
@@ -93,7 +88,7 @@ namespace WindowsAzureDiskResizer
             // Read current footer
             Console.WriteLine("[{0}] Reading VHD file format footer...", DateTime.Now.ToShortTimeString());
             var footer = new byte[512];
-            using (Stream stream = new MemoryStream())
+            using (var stream = new MemoryStream())
             {
                 blob.DownloadRangeToStream(stream, originalLength - 512, 512);
                 stream.Position = 0;
@@ -149,7 +144,7 @@ namespace WindowsAzureDiskResizer
 
             // Write new footer
             Console.WriteLine("[{0}] Writing VHD file format footer...", DateTime.Now.ToShortTimeString());
-            using (Stream stream = new MemoryStream(footer))
+            using (var stream = new MemoryStream(footer))
             {
                 blob.WritePages(stream, newSize);
             }
