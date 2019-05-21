@@ -22,7 +22,7 @@
 using System;
 using System.Globalization;
 
-namespace WindowsAzureDiskResizer.DiscUtils
+namespace WindowsAzureDiskResizer.Helpers.DiscUtils
 {
     /// <summary>
     /// Class whose instances represent disk geometries.

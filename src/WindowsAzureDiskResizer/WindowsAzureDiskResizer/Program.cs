@@ -1,9 +1,5 @@
 ﻿using System;
-using System.IO;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Blob;
-using WindowsAzureDiskResizer.DiscUtils;
+using WindowsAzureDiskResizer.Helpers;
 
 namespace WindowsAzureDiskResizer
 {
@@ -31,6 +27,7 @@ namespace WindowsAzureDiskResizer
                 Console.WriteLine("Argument bloburl invalid. Please specify a valid URL with an HTTP or HTTP schema.");
                 return -1;
             }
+
             var accountName = "";
             var accountKey = "";
             if (args.Length == 4)
@@ -53,112 +50,28 @@ namespace WindowsAzureDiskResizer
             }
 
             // Start the resize process
-            return ResizeVhdBlob(newSizeInGb * 1024 * 1024 * 1024, blobUri, accountName, accountKey);
-        }
+            var resizeVhdHelper = new ResizeVhdHelper();
+            var result = resizeVhdHelper.ResizeVhdBlob((int)newSizeInGb, blobUri, accountName, accountKey);
+            if (result != ResizeResult.Shrink)
+                return (int)result;
 
-        private static int ResizeVhdBlob(long newSize, Uri blobUri, string accountName, string accountKey)
-        {
-            bool isExpand = true;
-
-            // Check if blob exists
-            var blob = new CloudPageBlob(blobUri);
-            if (!string.IsNullOrEmpty(accountName) && !string.IsNullOrEmpty(accountKey))
+            Console.WriteLine("The specified VHD blob is larger than the specified new size. Shrinking disks is a potentially dangerous operation.");
+            Console.WriteLine("Do you want to continue with shrinking the disk? (y/n)");
+            while (true)
             {
-                blob = new CloudPageBlob(blobUri, new StorageCredentials(accountName, accountKey));
-            }
-            try
-            {
-                if (!blob.Exists())
+                var consoleKey = Console.ReadKey().KeyChar;
+                if (consoleKey == 'n')
                 {
-                    Console.WriteLine("The specified blob does not exist.");
+                    Console.WriteLine("Aborted.");
                     return -1;
                 }
-            }
-            catch (StorageException ex)
-            {
-                Console.WriteLine("The specified storage account credentials are invalid. " + ex.ToString());
-                return -1;
-            }
-
-            // Determine blob attributes
-            Console.WriteLine("[{0}] Determining blob size...", DateTime.Now.ToShortTimeString());
-            blob.FetchAttributes();
-            var originalLength = blob.Properties.Length;
-
-            // Read current footer
-            Console.WriteLine("[{0}] Reading VHD file format footer...", DateTime.Now.ToShortTimeString());
-            var footer = new byte[512];
-            using (var stream = new MemoryStream())
-            {
-                blob.DownloadRangeToStream(stream, originalLength - 512, 512);
-                stream.Position = 0;
-                stream.Read(footer, 0, 512);
-                stream.Close();
-            }
-
-            var footerInstance = Footer.FromBytes(footer, 0);
-
-            // Make sure this is a "fixed" disk
-            if (footerInstance.DiskType != FileType.Fixed)
-            {
-                Console.WriteLine("The specified VHD blob is not a fixed-size disk. WindowsAzureDiskResizer can only resize fixed-size VHD files.");
-                return -1;
-            }
-            if (footerInstance.CurrentSize >= newSize)
-            {
-                Console.WriteLine("The specified VHD blob is larger than the specified new size. Shrinking disks is a potentially dangerous operation.");
-                Console.WriteLine("Do you want to continue with shrinking the disk? (y/n)");
-                while (true)
+                if (consoleKey == 'y')
                 {
-                    var consoleKey = Console.ReadKey().KeyChar;
-                    if (consoleKey == 'n')
-                    {
-                        Console.WriteLine("Aborted.");
-                        return -1;
-                    }
-                    if (consoleKey == 'y')
-                    {
-                        isExpand = false;
-                        break;
-                    }
+                    resizeVhdHelper.IsExpand = false;
+                    var finalResult = resizeVhdHelper.DoResizeVhdBlob();
+                    return (int)finalResult;
                 }
             }
-            Console.WriteLine("[{0}] VHD file format fixed, current size {1} bytes.", DateTime.Now.ToShortTimeString(), footerInstance.CurrentSize);
-
-            // Expand the blob
-            Console.WriteLine("[{0}] Resizing containing blob...", DateTime.Now.ToShortTimeString());
-            blob.Resize(newSize + 512);
-
-            // Change footer size values
-            Console.WriteLine("[{0}] Updating VHD file format footer...", DateTime.Now.ToShortTimeString());
-            footerInstance.CurrentSize = newSize;
-            footerInstance.OriginalSize = newSize;
-            footerInstance.Geometry = Geometry.FromCapacity(newSize);
-
-            footerInstance.UpdateChecksum();
-
-            footer = new byte[512];
-            footerInstance.ToBytes(footer, 0);
-
-            Console.WriteLine("[{0}] New VHD file size {1} bytes, checksum {2}.", DateTime.Now.ToShortTimeString(), footerInstance.CurrentSize, footerInstance.Checksum);
-
-            // Write new footer
-            Console.WriteLine("[{0}] Writing VHD file format footer...", DateTime.Now.ToShortTimeString());
-            using (var stream = new MemoryStream(footer))
-            {
-                blob.WritePages(stream, newSize);
-            }
-
-            // Write 0 values where the footer used to be
-            if (isExpand)
-            {
-                Console.WriteLine("[{0}] Overwriting the old VHD file footer with zeroes...", DateTime.Now.ToShortTimeString());
-                blob.ClearPages(originalLength - 512, 512);
-            }
-
-            // Done!
-            Console.WriteLine("[{0}] Done!", DateTime.Now.ToShortTimeString());
-            return 0;
         }
 
         private static void WriteHeader()
