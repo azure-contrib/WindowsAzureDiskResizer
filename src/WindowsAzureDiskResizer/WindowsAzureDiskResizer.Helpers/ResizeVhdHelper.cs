@@ -8,6 +8,9 @@ using WindowsAzureDiskResizer.Helpers.DiscUtils;
 
 namespace WindowsAzureDiskResizer.Helpers
 {
+    /// <summary>
+    /// This helper class has methods for resizing a VHD file located in an Azure Storage account.
+    /// </summary>
     public class ResizeVhdHelper
     {
         private CloudPageBlob blob;
@@ -15,10 +18,26 @@ namespace WindowsAzureDiskResizer.Helpers
         private Footer footerInstance;
         private long originalLength;
 
+        /// <summary>
+        /// Gets or sets whether the resize operation will expand the VHD file.
+        /// </summary>
         public bool IsExpand { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets the new size for the VHD file.
+        /// </summary>
         public ByteSize NewSize { get; set; }
 
+        /// <summary>
+        /// Tries to resize the VHD file, using the parameters specified.
+        /// </summary>
+        /// <param name="newSizeInGb">The new size of the VHD file, in gigabytes.</param>
+        /// <param name="blobUri">The <see cref="Uri"/> to locate the VHD in the Azure Storage account.</param>
+        /// <param name="accountName">The name of the Azure Storage account.</param>
+        /// <param name="accountKey">The key of the Azure Storage account.</param>
+        /// <returns>Returns <see cref="ResizeResult.Error"/> if there were issues while trying to do the resize operation. 
+        /// Returns <see cref="ResizeResult.Shrink"/> if this is a shrink operation which needs user confirmation. 
+        /// Returns <see cref="ResizeResult.Success"/> if everything went fine.</returns>
         public ResizeResult ResizeVhdBlob(int newSizeInGb, Uri blobUri, string accountName, string accountKey)
         {
             NewSize = ByteSize.FromGigaBytes(newSizeInGb);
@@ -76,6 +95,11 @@ namespace WindowsAzureDiskResizer.Helpers
             return DoResizeVhdBlob();
         }
 
+        /// <summary>
+        /// Does the resize operation, based on the parameters specified when method <see cref="ResizeVhdBlob(int, Uri, string, string)"/> was called.
+        /// Please first call method <see cref="ResizeVhdBlob(int, Uri, string, string)"/> before calling this method.
+        /// </summary>
+        /// <returns><see cref="ResizeResult.Success"/> if the resize operation went fine.</returns>
         public ResizeResult DoResizeVhdBlob()
         {
             Console.WriteLine("[{0}] VHD file format fixed, current size {1} bytes.", DateTime.Now.ToShortTimeString(), footerInstance.CurrentSize);
