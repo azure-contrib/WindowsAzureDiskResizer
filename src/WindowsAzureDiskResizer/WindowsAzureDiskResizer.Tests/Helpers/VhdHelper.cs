@@ -9,6 +9,9 @@ using DiscUtils.Vhd;
 
 namespace WindowsAzureDiskResizer.Tests.Helpers
 {
+    /// <summary>
+    /// This helper class has methods for handling VHD files. 
+    /// </summary>
     public class VhdHelper
     {
         /// <summary>
