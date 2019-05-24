@@ -21,7 +21,7 @@
 //
 using System;
 
-namespace WindowsAzureDiskResizer.DiscUtils
+namespace WindowsAzureDiskResizer.Helpers.DiscUtils
 {
     public class Footer
     {

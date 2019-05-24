@@ -25,7 +25,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace WindowsAzureDiskResizer.DiscUtils
+namespace WindowsAzureDiskResizer.Helpers.DiscUtils
 {
     internal static class Utilities
     {
@@ -772,7 +772,7 @@ namespace WindowsAzureDiskResizer.DiscUtils
             return ReadFully(stream, SectorSize);
         }
 
-        
+
 
         /// <summary>
         /// Copies the contents of one stream to another.
