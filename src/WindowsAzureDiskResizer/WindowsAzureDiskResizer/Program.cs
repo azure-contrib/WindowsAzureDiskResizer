@@ -24,7 +24,7 @@ namespace WindowsAzureDiskResizer
             }
             if (!Uri.TryCreate(args[1], UriKind.Absolute, out Uri blobUri))
             {
-                Console.WriteLine("Argument bloburl invalid. Please specify a valid URL with an HTTP or HTTP schema.");
+                Console.WriteLine("Argument bloburl invalid. Please specify a valid URL with an HTTP or HTTPS schema.");
                 return -1;
             }
 
@@ -44,7 +44,7 @@ namespace WindowsAzureDiskResizer
             // Verify size. Size for disk must be <= 1023 GB
             if (newSizeInGb > 1023)
             {
-                Console.WriteLine("The given disk size exceeds 1023 GB. Windows Azure will not be able to start the virtual machine stored on this disk if you continue.");
+                Console.WriteLine("The given disk size exceeds 1023 GB. Microsoft Azure will not be able to start the virtual machine stored on this disk if you continue.");
                 Console.WriteLine("See https://msdn.microsoft.com/en-us/library/azure/dn197896.aspx for more information.");
                 return -1;
             }
@@ -77,7 +77,7 @@ namespace WindowsAzureDiskResizer
         private static void WriteHeader()
         {
             Console.WriteLine("WindowsAzureDiskResizer v{0}", typeof(Program).Assembly.GetName().Version);
-            Console.WriteLine("Copyright 2013 Maarten Balliauw");
+            Console.WriteLine("Copyright © 2013 Maarten Balliauw");
             Console.WriteLine();
         }
 

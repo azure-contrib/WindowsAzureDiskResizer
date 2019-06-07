@@ -1,12 +1,11 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("WindowsAzureDiskResizer")]
-[assembly: AssemblyDescription("Resizes a Windows Azure virtual disk directly in blob storage.")]
+[assembly: AssemblyDescription("Resizes a Microsoft Azure virtual disk directly in blob storage.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("WindowsAzureDiskResizer")]
