@@ -21,13 +21,7 @@ namespace WindowsAzureDiskResizer.Tests.Helpers
         /// <param name="diskSizeInGb">Size of the VHD in gigabytes.</param>
         /// <param name="filePath">Path of the VHD file.</param>
         /// <param name="diskName">Name of the volume of the VHD.</param>
-        /// <param name="createTestFolderAndFile">True to create a test folder and file, otherwise they are not created.</param>
-        /// <param name="testFolderName">Name of the test folder.</param>
-        /// <param name="testFileName">Name of the test file, including extension.</param>
-        /// <param name="testFileContents">Contents of the test file.</param>
-        public static void CreateVhdDisk(bool isDynamic, int diskSizeInGb, string filePath, string diskName,
-                                                bool createTestFolderAndFile = false, string testFolderName = null,
-                                                string testFileName = null, string testFileContents = null)
+        public static void CreateVhdDisk(bool isDynamic, int diskSizeInGb, string filePath, string diskName)
         {
             var diskSize = (long)ByteSize.FromGigaBytes(diskSizeInGb).Bytes;
 
@@ -42,25 +36,9 @@ namespace WindowsAzureDiskResizer.Tests.Helpers
                     using (var destNtfs = NtfsFileSystem.Format(volumeManager.GetLogicalVolumes().FirstOrDefault(), diskName, new NtfsFormatOptions()))
                     {
                         destNtfs.NtfsOptions.ShortNameCreation = ShortFileNameOption.Disabled;
-
-                        if (createTestFolderAndFile)
-                        {
-                            File.WriteAllText(testFileName, testFileContents);
-                            destNtfs.CreateDirectory(testFolderName);
-
-                            using (var source = new FileStream(testFileName, FileMode.Open, FileAccess.Read))
-                            {
-                                using (Stream dest = destNtfs.OpenFile($"{testFolderName}\\{testFileName}", FileMode.Create, FileAccess.ReadWrite))
-                                {
-                                    source.CopyTo(dest);
-                                    dest.Flush();
-                                }
-                            }
-                        }
                     }
                 }
-                //commit everything to the stream before closing
-                fs.Flush();
+                fs.Flush(); // commit everything to the stream before closing
             }
         }
     }

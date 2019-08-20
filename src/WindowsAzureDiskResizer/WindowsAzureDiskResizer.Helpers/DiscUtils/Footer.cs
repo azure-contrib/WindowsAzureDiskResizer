@@ -20,9 +20,11 @@
 // DEALINGS IN THE SOFTWARE.
 //
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace WindowsAzureDiskResizer.Helpers.DiscUtils
 {
+    [ExcludeFromCodeCoverage]
     public class Footer
     {
         public const string FileCookie = "conectix";

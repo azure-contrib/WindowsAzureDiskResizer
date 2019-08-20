@@ -112,6 +112,14 @@ namespace WindowsAzureDiskResizer.Tests
         }
 
         [TestMethod]
+        public void GetVhdSizeInContainer_Fail()
+        {
+            var blobUri = new Uri(testDiskUri);
+            var result = AzureStorageEmulatorHelper.GetVhdSizeInContainer(blobUri, false, accountName, accountKey);
+            Assert.AreEqual(0L, result);
+        }
+
+        [TestMethod]
         public void Resize_Vhd_Blob_Empty_Account_Details()
         {
             var newSizeInGb = 1;

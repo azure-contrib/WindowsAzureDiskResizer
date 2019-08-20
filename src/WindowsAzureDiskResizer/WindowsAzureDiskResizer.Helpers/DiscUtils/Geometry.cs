@@ -20,6 +20,7 @@
 // DEALINGS IN THE SOFTWARE.
 //
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace WindowsAzureDiskResizer.Helpers.DiscUtils
@@ -28,6 +29,7 @@ namespace WindowsAzureDiskResizer.Helpers.DiscUtils
     /// Class whose instances represent disk geometries.
     /// </summary>
     /// <remarks>Instances of this class are immutable.</remarks>
+    [ExcludeFromCodeCoverage]
     public sealed class Geometry
     {
         private readonly int _cylinders;
