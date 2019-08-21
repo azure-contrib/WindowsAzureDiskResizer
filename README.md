@@ -1,6 +1,6 @@
 # WindowsAzureDiskResizer
 
-Resizes a Windows Azure virtual disk directly in blob storage.
+Resizes a Microsoft Azure virtual disk directly in blob storage.
 
 See http://blog.maartenballiauw.be/post/2013/01/07/Tales-from-the-trenches-resizing-a-Windows-Azure-virtual-disk-the-smooth-way.aspx for more info.
 
@@ -11,9 +11,9 @@ Binaries: http://blog.maartenballiauw.be/file.axd?file=2013%2f1%2fWindowsAzureDi
 The following steps should be taken for growing a disk:
 * Shutdown the VM
 * Delete the VM -or- detach the disk if it’s not the OS disk
-* In the Windows Azure portal, delete the disk (retain the data!) do that the lease Windows Azure has on it is removed
+* In the Microsoft Azure portal, delete the disk (retain the data!) do that the lease Microsoft Azure has on it is removed
 * Run WindowsAzureDiskResizer with the correct parameters
-* In the Windows Azure portal, recreate the disk based on the existing blob
+* In the Microsoft Azure portal, recreate the disk based on the existing blob
 * Recreate the VM  -or- reattach the disk if it’s not the OS disk
 * Start the VM
 * Use diskpart / disk management to resize the partition
@@ -33,9 +33,9 @@ Note that shrinking a disk is a potentially dangerous operation and is currently
     * http://forums.justlinux.com/showthread.php?147711-Resizing-Ext2-Ext3-Partitions-resize2fs-and-fdisk
 * Shutdown the VM
 * Delete the VM -or- detach the disk if it’s not the OS disk
-* In the Windows Azure portal, delete the disk (retain the data!) do that the lease Windows Azure has on it is removed
+* In the Microsoft Azure portal, delete the disk (retain the data!) do that the lease Microsoft Azure has on it is removed
 * Run WindowsAzureDiskResizer with the correct parameters
-* In the Windows Azure portal, recreate the disk based on the existing blob
+* In the Microsoft Azure portal, recreate the disk based on the existing blob
 * Recreate the VM  -or- reattach the disk if it’s not the OS disk
 * Start the VM
 

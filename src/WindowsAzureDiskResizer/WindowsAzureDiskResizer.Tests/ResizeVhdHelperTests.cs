@@ -3,15 +3,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using ByteSizeLib;
+using Microsoft.QualityTools.Testing.Fakes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob.Fakes;
 using WindowsAzureDiskResizer.Helpers;
 using WindowsAzureDiskResizer.Tests.Helpers;
 
 namespace WindowsAzureDiskResizer.Tests
 {
+    /// <summary>
+    /// This unit test class uses Azure Storage Emulator for running unit tests. There is more documentation
+    /// about the emulator at: https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator
+    /// </summary>
     [TestClass]
     public class ResizeVhdHelperTests
     {
+        private const string testDiskUri = "http://127.0.0.1:10000/devstoreaccount1/test-container/TestDisk0.vhd";
+        private const string accountName = "devstoreaccount1";
+        private const string accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
         private static readonly Process process;
         private static readonly List<Action> _cleanupActions = new List<Action>();
 
@@ -64,10 +74,7 @@ namespace WindowsAzureDiskResizer.Tests
         public void Resize_Vhd_Blob_Not_Exists()
         {
             var newSizeInGb = 1;
-            var blobUri = new Uri("http://127.0.0.1:10000/devstoreaccount1/test-container/TestDisk0.vhd");
-            var accountName = "devstoreaccount1";
-            var accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
-
+            var blobUri = new Uri(testDiskUri);
             var resizeVhdHelper = new ResizeVhdHelper();
             var result = resizeVhdHelper.ResizeVhdBlob(newSizeInGb, blobUri, accountName, accountKey);
 
@@ -78,10 +85,7 @@ namespace WindowsAzureDiskResizer.Tests
         public void Resize_Vhd_Blob_Not_Exists_And_Bytes_Are_The_Same()
         {
             var newSizeInGb = 1;
-            var blobUri = new Uri("http://127.0.0.1:10000/devstoreaccount1/test-container/TestDisk0.vhd");
-            var accountName = "devstoreaccount1";
-            var accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
-
+            var blobUri = new Uri(testDiskUri);
             var resizeVhdHelper = new ResizeVhdHelper();
             var result = resizeVhdHelper.ResizeVhdBlob(newSizeInGb, blobUri, accountName, accountKey);
 
@@ -90,11 +94,45 @@ namespace WindowsAzureDiskResizer.Tests
         }
 
         [TestMethod]
+        public void Resize_Vhd_Blob_Fail()
+        {
+            using (ShimsContext.Create())
+            {
+                var newSizeInGb = 1;
+                var blobUri = new Uri(testDiskUri);
+                ShimCloudBlob.AllInstances.ExistsBlobRequestOptionsOperationContext = (blob, opts, context) =>
+                {
+                    throw new StorageException();
+                };
+
+                var resizeVhdHelper = new ResizeVhdHelper();
+                var result = resizeVhdHelper.ResizeVhdBlob(newSizeInGb, blobUri, accountName, accountKey);
+                Assert.IsTrue(result == ResizeResult.Error);
+            }
+        }
+
+        [TestMethod]
+        public void GetVhdSizeInContainer_Fail()
+        {
+            var blobUri = new Uri(testDiskUri);
+            var result = AzureStorageEmulatorHelper.GetVhdSizeInContainer(blobUri, false, accountName, accountKey);
+            Assert.AreEqual(0L, result);
+        }
+
+        [TestMethod]
+        public void Resize_Vhd_Blob_Empty_Account_Details()
+        {
+            var newSizeInGb = 1;
+            var blobUri = new Uri(testDiskUri);
+            var resizeVhdHelper = new ResizeVhdHelper();
+            var result = resizeVhdHelper.ResizeVhdBlob(newSizeInGb, blobUri, null, null);
+            Assert.IsTrue(result == ResizeResult.Error);
+        }
+
+        [TestMethod]
         public void Resize_Vhd_Blob_Dynamic_Disk()
         {
             var newSizeInGb = 1;
-            var accountName = "devstoreaccount1";
-            var accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
             var vhdFilePath = "TestDisk-Dynamic.vhd";
             var containerName = "test-container";
 
@@ -118,10 +156,8 @@ namespace WindowsAzureDiskResizer.Tests
         [TestMethod]
         public void Resize_Vhd_Blob_Shrink()
         {
-            var newSizeInGb = 1;
             var firstSizeInGb = 2;
-            var accountName = "devstoreaccount1";
-            var accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+            var newSizeInGb = 1;
             var vhdFilePath = "TestDisk-Shrink.vhd";
             var containerName = "test-container";
 
@@ -152,10 +188,8 @@ namespace WindowsAzureDiskResizer.Tests
         [TestMethod]
         public void Resize_Vhd_Blob_Expand()
         {
-            var newSizeInGb = 2;
             var firstSizeInGb = 1;
-            var accountName = "devstoreaccount1";
-            var accountKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==";
+            var newSizeInGb = 2;
             var vhdFilePath = "TestDisk-Expand.vhd";
             var containerName = "test-container";
 

@@ -19,8 +19,11 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 //
+using System.Diagnostics.CodeAnalysis;
+
 namespace WindowsAzureDiskResizer.Helpers.DiscUtils
 {
+    [ExcludeFromCodeCoverage]
     internal static class Sizes
     {
         public const long OneKiB = 1024;

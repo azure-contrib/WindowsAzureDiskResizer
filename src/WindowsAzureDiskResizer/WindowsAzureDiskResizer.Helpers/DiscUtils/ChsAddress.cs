@@ -19,12 +19,15 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 //
+using System.Diagnostics.CodeAnalysis;
+
 namespace WindowsAzureDiskResizer.Helpers.DiscUtils
 {
     /// <summary>
     /// Class whose instances represent a CHS (Cylinder, Head, Sector) address on a disk.
     /// </summary>
     /// <remarks>Instances of this class are immutable.</remarks>
+    [ExcludeFromCodeCoverage]
     public sealed class ChsAddress
     {
         /// <summary>
